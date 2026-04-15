@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA1 — Entrenamiento de Machine Learning con Git y GitHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #00f5a0;
+    --accent2: #00d4ff;
+    --accent3: #ff6b6b;
+    --text: #e8edf5;
+    --muted: #7a8499;
+    --border: rgba(0,245,160,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,245,160,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,245,160,0.1);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .badge::before { content: '◉'; animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .hero-university {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 20px;
+    animation: fadeUp 0.8s 0.2s ease both;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+  .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; font-family: 'Space Mono', monospace; }
+  .meta-value { font-size: 15px; font-weight: 600; color: var(--text); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,14,26,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 56px;
+    overflow-x: auto;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--accent); background: rgba(0,245,160,0.08); }
+
+  /* ─── LAYOUT ─── */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(0,245,160,0.1);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .section-title {
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── TEAM GRID ─── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .team-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+
+  .team-avatar {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; color: #0a0e1a;
+  }
+
+  .team-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .team-alias { font-size: 11px; color: var(--accent); font-family: 'Space Mono', monospace; }
+  .team-pct { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ─── STEPS ─── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    left: 12px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+  }
+
+  .step {
+    position: relative;
+    padding: 0 0 40px 0;
+  }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    left: -34px; top: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .step-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ─── CODE BLOCK ─── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid rgba(0,245,160,0.2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: #7ee787;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+    margin: 16px 0;
+  }
+
+  .code-block .comment { color: #8b949e; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .string { color: #a5d6ff; }
+  .code-block .fn { color: #d2a8ff; }
+
+  .code-label {
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ─── MODEL CARDS ─── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .model-card:hover { border-color: var(--accent2); transform: translateY(-3px); }
+
+  .model-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .model-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .model-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .model-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .metric-key { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .metric-val { font-size: 13px; font-weight: 600; color: var(--accent); font-family: 'Space Mono', monospace; }
+
+  /* ─── COMMIT TIMELINE ─── */
+  .commits {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .commit {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: border-color 0.2s;
+  }
+  .commit:hover { border-color: var(--accent); }
+
+  .commit-hash {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,245,160,0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .commit-info { flex: 1; }
+  .commit-msg { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .commit-meta { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  .commit-branch {
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(0,212,255,0.1);
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ─── DATASET SECTION ─── */
+  .dataset-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+
+  .dataset-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  .dataset-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .dataset-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  /* ─── R2 BAR ─── */
+  .r2-bars { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .r2-row { display: flex; flex-direction: column; gap: 6px; }
+  .r2-label { display: flex; justify-content: space-between; font-size: 12px; }
+  .r2-key { color: var(--muted); }
+  .r2-pct { color: var(--accent); font-family: 'Space Mono', monospace; font-weight: 700; }
+  .r2-track {
+    height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden;
+  }
+  .r2-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 1s ease;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ─── REFS ─── */
+  .ref-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .ref-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 13px; color: var(--muted); line-height: 1.6;
+  }
+  .ref-list li::before {
+    content: '→';
+    color: var(--accent); font-family: 'Space Mono', monospace; flex-shrink: 0; margin-top: 2px;
+  }
+  .ref-list a { color: var(--accent2); }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 1px; background: var(--border); margin: 0 24px; }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">NRC: 23176 — Universidad Continental</div>
+  <p class="hero-university">Construcción de Software · 2026</p>
+  <h1>Machine Learning<br>con Git & GitHub</h1>
+  <p class="hero-sub">Práctica PA1 — Entrenamiento colaborativo de modelos de Machine Learning usando control de versiones distribuido.</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Docente</span>
+      <span class="meta-value">Hugo Espetia Huamanga</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Grupo</span>
+      <span class="meta-value">Los Macacos</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Dataset A</span>
+      <span class="meta-value">House Prices</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Dataset B</span>
+      <span class="meta-value">Hospital</span>
+    </div>
+  </div>
+</section>
+
+<nav>
+  <a href="#equipo">Equipo</a>
+  <a href="#repositorio">Repositorio</a>
+  <a href="#datasetA">Dataset A</a>
+  <a href="#modelos">Modelos</a>
+  <a href="#datasetB">Dataset B</a>
+  <a href="#commits">Commits</a>
+  <a href="#referencias">Referencias</a>
+</nav>
+
+<!-- EQUIPO -->
+<section id="equipo" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Integrantes</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar">J</div>
+      <div class="team-name">Fernández Pari Jose Sebastián</div>
+      <div class="team-alias">devseb</div>
+      <div class="team-pct">100%</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">E</div>
+      <div class="team-name">Apaza Quispe Emerson</div>
+      <div class="team-alias">devemerson</div>
+      <div class="team-pct">100%</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">B</div>
+      <div class="team-name">Valle Miranda Brayan Santiago</div>
+      <div class="team-alias">devbrayan</div>
+      <div class="team-pct">100%</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">L</div>
+      <div class="team-name">Curo Chuctaya Leonardo</div>
+      <div class="team-alias">devleo</div>
+      <div class="team-pct">100%</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">M</div>
+      <div class="team-name">Gibaja Serrano Mauricio</div>
+      <div class="team-alias">devmauricio</div>
+      <div class="team-pct">100%</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REPOSITORIO -->
+<section id="repositorio" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Creación del Repositorio</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-title">$ git init</div>
+      <div class="step-desc">Inicialización del repositorio local vacío en <code>Desktop/PA1/</code>. Se creó el directorio <code>.git/</code> con toda la estructura de control de versiones.</div>
+    </div>
+    <div class="step">
+      <div class="step-title">$ git remote add origin</div>
+      <div class="step-desc">Vinculación con el repositorio remoto en GitHub: <code>SebFer-11/Evaluacion-ConstruccionSW-macacos.git</code></div>
+    </div>
+    <div class="step">
+      <div class="step-title">$ touch README.md</div>
+      <div class="step-desc">Creación del archivo README con los nombres de los integrantes del grupo. Primer archivo del proyecto añadido al árbol de trabajo.</div>
+    </div>
+    <div class="step">
+      <div class="step-title">$ git branch / checkout</div>
+      <div class="step-desc">Creación de ramas individuales por desarrollador: <code>devbrayan</code>, <code>devemerson</code>, <code>devleo</code>, <code>devmauricio</code>, <code>devseb</code>. Cada integrante trabajó en su propia rama.</div>
+    </div>
+    <div class="step">
+      <div class="step-title">Permisos & Rulesets</div>
+      <div class="step-desc">Configuración de reglas de protección de la rama <code>main</code>: se requiere Pull Request antes de hacer merge. Commits firmados y status checks configurados.</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <span class="code-label">bash</span>
+<span class="comment"># Inicializar y conectar</span>
+$ git init
+$ git remote add origin https://github.com/SebFer-11/-Evaluacion-ConstruccionSW-macacos.git
+
+<span class="comment"># Crear ramas por integrante</span>
+$ git branch devbrayan
+$ git branch devemerson
+$ git branch devleo
+$ git branch devmauricio
+$ git branch devseb
+
+<span class="comment"># Verificar ramas</span>
+$ git branch
+  devbrayan
+  devemerson
+* devleo
+  devmauricio
+  devseb
+  master
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DATASET A -->
+<section id="datasetA" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Dataset A — House Prices</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="dataset-block">
+    <span class="dataset-tag">kc_house_data_NaN.csv</span>
+    <div class="dataset-name">House Prices Dataset</div>
+    <div class="dataset-desc">Dataset de precios de casas con 22 columnas: id, date, price, bedrooms, bathrooms, sqft_living, sqft_lot, floors, waterfront, view, condition, grade, sqft_above, sqft_basement, yr_built, yr_renovated, zipcode, lat, long, sqft_living15, sqft_lot15. Se aplicó limpieza de datos con reemplazo de NaN por la media de cada columna.</div>
+
+    <div class="r2-bars">
+      <div class="r2-row">
+        <div class="r2-label"><span class="r2-key">Regresión Lineal Simple (R²)</span><span class="r2-pct">49.3%</span></div>
+        <div class="r2-track"><div class="r2-fill" style="width:49.3%"></div></div>
+      </div>
+      <div class="r2-row">
+        <div class="r2-label"><span class="r2-key">Regresión Lineal Múltiple (R²)</span><span class="r2-pct">53.7%</span></div>
+        <div class="r2-track"><div class="r2-fill" style="width:53.7%"></div></div>
+      </div>
+      <div class="r2-row">
+        <div class="r2-label"><span class="r2-key">Regresión Polinómica grado 3 (R²)</span><span class="r2-pct">60.7%</span></div>
+        <div class="r2-track"><div class="r2-fill" style="width:60.7%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MODELOS -->
+<section id="modelos" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Modelos de Machine Learning</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="model-grid">
+    <!-- Modelo 1 -->
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(0,245,160,0.1)">📈</div>
+      <div class="model-title">Regresión Lineal Simple</div>
+      <div class="model-desc">Modelo entrenado con <strong>sqft_living</strong> como variable predictora y <strong>price</strong> como objetivo. Implementado por devseb.</div>
+      <div class="metric-row">
+        <span class="metric-key">R²</span>
+        <span class="metric-val">0.4929</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">MSE</span>
+        <span class="metric-val">68,351,286,833</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Intercepto</span>
+        <span class="metric-val">-43,580.74</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Coeficiente</span>
+        <span class="metric-val">280.62</span>
+      </div>
+    </div>
+
+    <!-- Modelo 2 -->
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(0,212,255,0.1)">📊</div>
+      <div class="model-title">Regresión Lineal Múltiple</div>
+      <div class="model-desc">Modelo con múltiples variables: <strong>sqft_living</strong>, <strong>grade</strong> y <strong>bathrooms</strong>. Mayor poder predictivo. Implementado por devemerson.</div>
+      <div class="metric-row">
+        <span class="metric-key">R²</span>
+        <span class="metric-val">0.5370</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">MSE</span>
+        <span class="metric-val">62,391,281,865</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Intercepto</span>
+        <span class="metric-val">-597,296.51</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Variables</span>
+        <span class="metric-val">3 features</span>
+      </div>
+    </div>
+
+    <!-- Modelo 3 -->
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(255,107,107,0.1)">🔬</div>
+      <div class="model-title">Regresión Polinómica</div>
+      <div class="model-desc">Transformación polinómica de grado 3 sobre las mismas variables del modelo múltiple. Mejor ajuste no lineal. Implementado por devmauricio/devleo.</div>
+      <div class="metric-row">
+        <span class="metric-key">R²</span>
+        <span class="metric-val">0.6065</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">MSE</span>
+        <span class="metric-val">53,028,424,283</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Grado</span>
+        <span class="metric-val">3</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Librería</span>
+        <span class="metric-val">PolynomialFeatures</span>
+      </div>
+    </div>
+
+    <!-- Modelo 4 -->
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(168,85,247,0.1)">🏥</div>
+      <div class="model-title">Clasificación Logística</div>
+      <div class="model-desc">Modelo de clasificación sobre el dataset hospitalario para predecir el <strong>tipo de tratamiento</strong>. Evaluado con matriz de confusión. Implementado por devbrayan.</div>
+      <div class="metric-row">
+        <span class="metric-key">Dataset</span>
+        <span class="metric-val">hospital.csv</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Modelo</span>
+        <span class="metric-val">LogisticRegression</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Evaluación</span>
+        <span class="metric-val">Conf. Matrix</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Split</span>
+        <span class="metric-val">train_test_split</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <span class="code-label">Python · Regresión Polinómica</span>
+<span class="comment"># Variables</span>
+x_data3 = df[['sqft_living', 'grade', 'bathrooms']]
+y_data3 = y_data
+
+<span class="comment"># Transformación polinómica</span>
+pr = <span class="fn">PolynomialFeatures</span>(degree=<span class="string">3</span>)
+X_poly = pr.<span class="fn">fit_transform</span>(x_data3)
+
+<span class="comment"># Modelo</span>
+lr = <span class="fn">LinearRegression</span>()
+lr.<span class="fn">fit</span>(X_poly, y_data3)
+
+<span class="comment"># Predicciones</span>
+yhat3 = lr.<span class="fn">predict</span>(X_poly)
+
+<span class="comment"># Métricas</span>
+<span class="fn">print</span>(f"R²: {<span class="fn">r2_score</span>(y_data3, yhat3)}")   <span class="comment"># → 0.6065</span>
+<span class="fn">print</span>(f"MSE: {<span class="fn">mean_squared_error</span>(y_data3, yhat3)}")  <span class="comment"># → 53,028,424,283</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DATASET B -->
+<section id="datasetB" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Dataset B — Hospital</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="dataset-block">
+    <span class="dataset-tag">ingresos pacientes - ingresos.csv</span>
+    <div class="dataset-name">Dataset Hospitalario</div>
+    <div class="dataset-desc">Dataset con registros de pacientes que incluye: Número de Paciente, DNI, Nombre, Edad, Tipo de Paciente, Fecha de Cita, Cobertura Médica, Especialidad, Tipo de Consulta, Costo, Método de Pago, Diagnóstico, Tratamiento, entre otras variables. Se limpió el dataset eliminando columnas innecesarias y valores nulos.</div>
+  </div>
+
+  <div class="code-block">
+    <span class="code-label">Python · Clasificación Logística</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+<span class="keyword">import</span> seaborn <span class="keyword">as</span> sns
+
+<span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split
+<span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix, accuracy_score
+
+<span class="comment"># Cargar datos</span>
+data = pd.<span class="fn">read_csv</span>("ingresos pacientes - ingresos.csv")
+
+<span class="comment"># Limpieza</span>
+data = data.<span class="fn">drop</span>(columns=['Nro Paciente', 'DNI', 'Nombre del Paciente',
+    'Fecha de Cita', 'Fecha de Cita.1'], errors='ignore')
+data = data.<span class="fn">dropna</span>()
+
+<span class="comment"># Variables</span>
+y = data['tipo tratamiento numerico']
+<span class="comment"># → Matriz de Confusión evaluada con sklearn</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- COMMITS -->
+<section id="commits" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">Historial de Commits</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="commits">
+    <div class="commit">
+      <span class="commit-hash">e38ed83</span>
+      <div class="commit-info">
+        <div class="commit-msg">devseb Regresion Lineal dataSetA</div>
+        <div class="commit-meta">Archivos: DataSetA/house_prices.csv · datasetA.py</div>
+      </div>
+      <span class="commit-branch">devseb</span>
+    </div>
+    <div class="commit">
+      <span class="commit-hash">f7a87bf</span>
+      <div class="commit-info">
+        <div class="commit-msg">devemerson Regresion Multiple DataSet A</div>
+        <div class="commit-meta">Archivos: CASAS1/casa32.py · CASAS1/kc_house_data_NaN.csv — 21,736 inserciones</div>
+      </div>
+      <span class="commit-branch">devemerson</span>
+    </div>
+    <div class="commit">
+      <span class="commit-hash">3er commit</span>
+      <div class="commit-info">
+        <div class="commit-msg">devmauricio Regresión Polinómica DataSet A</div>
+        <div class="commit-meta">Branch actualizada desde origin/devmauricio — sync con devseb</div>
+      </div>
+      <span class="commit-branch">devmauricio</span>
+    </div>
+    <div class="commit">
+      <span class="commit-hash">a658e0a</span>
+      <div class="commit-info">
+        <div class="commit-msg">devleo Regresion lineal DataSet A</div>
+        <div class="commit-meta">Archivos: leo regresion lineal data set A.ipynb — 559 inserciones</div>
+      </div>
+      <span class="commit-branch">devleo</span>
+    </div>
+    <div class="commit">
+      <span class="commit-hash">40b005e</span>
+      <div class="commit-info">
+        <div class="commit-msg">devbrayan Regresion Logistica DataSetParte3</div>
+        <div class="commit-meta">Archivos: Pacientes/clasificacion_pacientes.py · ingresos pacientes - ingresos.csv — 265 inserciones</div>
+      </div>
+      <span class="commit-branch">devbrayan</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REFERENCIAS -->
+<section id="referencias" class="container reveal">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">Referencias</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <ul class="ref-list">
+    <li>GitHub. Documentación oficial. <a href="https://docs.github.com/" target="_blank">docs.github.com</a></li>
+    <li>GitHub Pages. Guía de uso. <a href="https://pages.github.com/" target="_blank">pages.github.com</a></li>
+    <li>Mozilla Developer Network (MDN). HTML y CSS. <a href="https://developer.mozilla.org/" target="_blank">developer.mozilla.org</a></li>
+    <li>W3Schools. Tutoriales de desarrollo web. <a href="https://www.w3schools.com/" target="_blank">w3schools.com</a></li>
+    <li>Git. Documentación oficial. <a href="https://git-scm.com/doc" target="_blank">git-scm.com/doc</a></li>
+  </ul>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Grupo <strong>Los Macacos</strong> · Universidad Continental · Cusco, Perú · 2026</p>
+  <p style="margin-top:8px; font-size:11px;">Construcción de Software · NRC 23176 · Docente: Hugo Espetia Huamanga</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  // Animate R2 bars on scroll
+  const bars = document.querySelectorAll('.r2-fill');
+  bars.forEach(b => {
+    const target = b.style.width;
+    b.style.width = '0';
+    const barObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { b.style.width = target; barObs.disconnect(); }
+      });
+    }, { threshold: 0.5 });
+    barObs.observe(b);
+  });
+</script>
+</body>
+</html>
